@@ -8,15 +8,19 @@ namespace SA_DS
 {
     class Program
     {
+        static int d = 2;
         static void Main(string[] args)
         {
+            
             var S = "mmiissiissiippii$";
             S = S.ToUpper();
 
             // 1. Scan S once to classify all the characters as L - or S - type into t;
             List<bool> t = CreateLSList(S);
-            // 2. Scan t once to find all the d-critical substringsin S into P1
-            List<int> P1 = CreateP1(t);
+            // 2. Scan t once to find all the d-critical substrings in S into P1
+            List<int> P1 = CreateP1(t,d);
+
+            List<int> S1 = CreateS1(S.ToList(),P1,t);
         }
 
         private static List<bool> CreateLSList(string S)
@@ -49,7 +53,8 @@ namespace SA_DS
 
             return t;
         }
-        private static List<int> CreateP1(List<bool> t)
+
+        private static List<int> CreateP1(List<bool> t, int d)
         {
             // creates P1 array of pointers to d-critical chars
             // RULES:
@@ -60,17 +65,99 @@ namespace SA_DS
             // - d>=2, in this implementation d=2
 
             List<int> P1 = new List<int>();
-            int d = 2;
 
-            for (int i = 1; i < t.Count; i++)
+            for (int i = t.Count-1; i > 0; i--)
             {
-                if ((t[i] == true && t[i - 1] == false) || P1.DefaultIfEmpty(-d).Last()==i-d)
-                    // if S[i] is critical or the last added d-critical char was S[i-d] (we compare indices)
+                if (t[i] == true||(P1[0]==i+d && t[i-1]!=true))
+                // if S[i] is critical or the last added d-critical char was S[i+d] (we compare indices)
                 {
-                    P1.Add(i);
+                    P1.Insert(0, i);
                 }
             }
             return P1;
+        }
+        private static List<int> CreateS1(List<char> S,List<int> P1, List<bool> t)
+        {
+            S.Add('$'); S.Add('$'); S.Add('$');
+            t.Add(false); t.Add(false); t.Add(false);
+
+            List<List<int>> valueLists = new List<List<int>>();
+            foreach(int p1element in P1)
+            {
+                valueLists.Add(new List<int>() {p1element});
+                for (int i = 0; i < d + 2; i++)
+                {
+                    valueLists.Last().Add(2*val(S[p1element+i])+val(t[p1element + i]));
+                }
+                valueLists.Last().Add(0);
+            }
+
+            // this works only for d=2
+            var result=valueLists.OrderBy(l => l[1]).ThenBy(l => l[2]).ThenBy(l => l[3]).ThenBy(l => l[4]);
+            valueLists=result.ToList();
+
+            for (int i = 0; i < P1.Count; i++)
+            {
+                P1[i] = valueLists[i][0];
+            }
+
+            int bucketNumber = 0;
+            valueLists[0][d + 2+1] = bucketNumber++;
+
+            for(int i = 1; i < valueLists.Count; i++)
+            {
+                if(substringsEqual(d, valueLists[i - 1], valueLists[i]))
+                {
+                    bucketNumber--;
+                }
+
+                valueLists[i][d + 2+1] = bucketNumber;
+                bucketNumber++;
+            }
+
+            var result2 = valueLists.OrderBy(e => e[0]);
+            valueLists = result2.ToList();
+
+            List<int> S1 = new List<int>();
+            foreach(List<int> l in valueLists)
+            {
+                S1.Add(l[d+2+1]);
+            }
+
+            return S1;
+        }
+
+        private static int val(char c)
+        {
+            int i = c;
+            return i;
+        }
+        private static int val (int i)
+        {
+            return i;
+        }
+        private static int val(bool b)
+        {
+            if (b)
+            {
+                return 1;
+            }
+            else
+            {
+                return 0;
+            }
+        }
+        private static bool substringsEqual(int d,List<int> list1, List<int> list2)
+            // returns true if the substrings of S (d+2 elements) are equal
+        {
+            for(int i = 0; i < d + 2; i++)
+            {
+                if(list1[1+i]!= list2[1 + i])
+                {
+                    return false;
+                }
+            }
+            return true;
         }
     }
 }
