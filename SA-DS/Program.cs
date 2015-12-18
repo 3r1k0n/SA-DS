@@ -15,24 +15,57 @@ namespace SA_DS
             var S = "mmiissiissiippii$";
             S = S.ToUpper();
 
+            List<int> Sint = new List<int>();
+
+            // transform string -> List<int>
+            foreach(char c in S)
+            {
+                Sint.Add(val(c));
+            }
+
+            List<int> SA = SADS(Sint);
+            Console.WriteLine("");
+            
+        }
+        private static List<int> SADS(List<int> S)
+        {
             // 1. Scan S once to classify all the characters as L - or S - type into t;
             List<bool> t = CreateLSList(S);
+
             // 2. Scan t once to find all the d-critical substrings in S into P1
-            List<int> P1 = CreateP1(t,d);
+            List<int> P1 = CreateP1(t, d);
 
-            List<int> S1 = CreateS1(S.ToList(),P1,t);
+            // 3. Bucket sort all the d-critical substrings using P1
+            // 4. Name each d-critical substring in S by its bucket index to get a new shortened string S1;
+            List<int> S1 = CreateS1(S, P1, t);
+
+            // if number of buckets == number of elements
+            if (S1.Count != (S1.Max() + 1))
+            {
+                // fire a recursive call
+                List<int> SA1 = SADS(S1);
+            }
+            else
+            {
+                // directly compute SA1 from S1
+                List<int> SA1 = S1;
+            }
+
+            // induce SA from SA1
+            List<int> SA = new List<int>();
+
+            return SA;
         }
-
-        private static List<bool> CreateLSList(string S)
+        private static List<bool> CreateLSList(List<int> S)
         {
             // L/S list where S is true and L is false
             List<bool> t = new List<bool>();
 
-            for (int i = S.Length - 1; i >= 0; i--)
+            for (int i = S.Count - 1; i >= 0; i--)
             {
-                if (S[i] == '$')
+                if (i == S.Count - 1)
                 {
-                    t.Insert(0, true); //insert S for $
+                    t.Insert(0, true); //insert S for last charachter
                 }
                 else
                 {
@@ -53,7 +86,6 @@ namespace SA_DS
 
             return t;
         }
-
         private static List<int> CreateP1(List<bool> t, int d)
         {
             // creates P1 array of pointers to d-critical chars
@@ -76,12 +108,14 @@ namespace SA_DS
             }
             return P1;
         }
-        private static List<int> CreateS1(List<char> S,List<int> P1, List<bool> t)
+        private static List<int> CreateS1(List<int> S,List<int> P1, List<bool> t)
         {
-            S.Add('$'); S.Add('$'); S.Add('$');
+            S.Add(36); S.Add(36); S.Add(36);
             t.Add(false); t.Add(false); t.Add(false);
 
             List<List<int>> valueLists = new List<List<int>>();
+
+            // for each index in P1 we're creating an int list element_in_p1|list_of_elements_in_subarray|placeholder_for_bucket_number
             foreach(int p1element in P1)
             {
                 valueLists.Add(new List<int>() {p1element});
@@ -147,6 +181,7 @@ namespace SA_DS
                 return 0;
             }
         }
+
         private static bool substringsEqual(int d,List<int> list1, List<int> list2)
             // returns true if the substrings of S (d+2 elements) are equal
         {
