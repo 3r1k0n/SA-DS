@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SA_DS
 {
@@ -12,16 +10,10 @@ namespace SA_DS
         static void Main(string[] args)
         {
             
-            var S = "mmiissiissiippii$";
-            S = S.ToUpper();
-
-            List<int> Sint = new List<int>();
+            var S = "mmiissiissiippii$".ToUpper();
 
             // transform string -> List<int>
-            foreach(char c in S)
-            {
-                Sint.Add(val(c));
-            }
+            List<int> Sint = S.Select(x => Convert.ToInt32(x)).ToList();
 
             List<int> SA = SADS(Sint);
             Console.WriteLine("");
@@ -63,24 +55,17 @@ namespace SA_DS
 
             for (int i = S.Count - 1; i >= 0; i--)
             {
-                if (i == S.Count - 1)
+                if (S[i] < S[i + 1] || i == S.Count - 1) //insert S for last charachter
                 {
-                    t.Insert(0, true); //insert S for last charachter
+                    t.Insert(0, true); //insert S for S[i] < S[i + 1]
+                }
+                else if (S[i] > S[i + 1])
+                {
+                    t.Insert(0, false); //insert L for S[i] > S[i + 1]
                 }
                 else
                 {
-                    if (S[i] > S[i + 1])
-                    {
-                        t.Insert(0, false); //insert L for S[i] > S[i + 1]
-                    }
-                    else if (S[i] < S[i + 1])
-                    {
-                        t.Insert(0, true); //insert S for S[i] < S[i + 1]
-                    }
-                    else
-                    {
-                        t.Insert(0, t[0]); //copy value if S[i] == S[i + 1]
-                    }
+                    t.Insert(0, t[0]); //repeat value if S[i] == S[i + 1]
                 }
             }
 
@@ -121,14 +106,13 @@ namespace SA_DS
                 valueLists.Add(new List<int>() {p1element});
                 for (int i = 0; i < d + 2; i++)
                 {
-                    valueLists.Last().Add(2*val(S[p1element+i])+val(t[p1element + i]));
+                    valueLists.Last().Add(2*S[p1element+i]+Convert.ToInt32(t[p1element + i]));
                 }
                 valueLists.Last().Add(0);
             }
 
             // this works only for d=2
-            var result=valueLists.OrderBy(l => l[1]).ThenBy(l => l[2]).ThenBy(l => l[3]).ThenBy(l => l[4]);
-            valueLists=result.ToList();
+            valueLists = valueLists.OrderBy(l => l[1]).ThenBy(l => l[2]).ThenBy(l => l[3]).ThenBy(l => l[4]).ToList(); 
 
             for (int i = 0; i < P1.Count; i++)
             {
@@ -149,45 +133,18 @@ namespace SA_DS
                 bucketNumber++;
             }
 
-            var result2 = valueLists.OrderBy(e => e[0]);
-            valueLists = result2.ToList();
+            valueLists = valueLists.OrderBy(e => e[0]).ToList();
 
-            List<int> S1 = new List<int>();
-            foreach(List<int> l in valueLists)
-            {
-                S1.Add(l[d+2+1]);
-            }
-
-            return S1;
+            return valueLists.Select(l => l[d + 2 + 1]).ToList();
         }
 
-        private static int val(char c)
-        {
-            int i = c;
-            return i;
-        }
-        private static int val (int i)
-        {
-            return i;
-        }
-        private static int val(bool b)
-        {
-            if (b)
-            {
-                return 1;
-            }
-            else
-            {
-                return 0;
-            }
-        }
-
+        // why are we skipping the first element
         private static bool substringsEqual(int d,List<int> list1, List<int> list2)
             // returns true if the substrings of S (d+2 elements) are equal
         {
             for(int i = 0; i < d + 2; i++)
             {
-                if(list1[1+i]!= list2[1 + i])
+                if(list1[1+i] != list2[1 + i])
                 {
                     return false;
                 }
